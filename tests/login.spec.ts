@@ -5,11 +5,9 @@ import { DashboardPage } from '../src/pages/DashboardPage';
 
  
 
-test.only('Login as Super Admin', async ({ page }) => {
+test('Login as Super Admin', async ({ page }) => {
   await AuthHelper.loginAs(page, 'superAdmin');
-
-
-  
+ 
 });
 
 test('Login as Tenant Admin', async ({ page }) => {
