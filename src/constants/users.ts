@@ -8,18 +8,21 @@ export const users = {
   tenantAdmin: {
     email: 'mason-brooks@yopmail.com',
     password: 'qJ*NjAaJEkT8',
-    role: 'Tenant Admin'
+  
+  },
+  manager:{
+    email: 'alex-hunter@yopmail.com',
+    password: 'jkecIRZRC!6C'
   },
 
   supervisor: {
     email: 'casey-parker@yopmail.com',
     password: 'n0oR2Dsfb)#4',
-    role: 'Supervisor'
   },
 
   agent: {
     email: 'abel-faringthon@yopmail.com',
     password: 'hK*9vtD$!Q$d',
-    role: 'Agent'
   }
+
 };

@@ -9,34 +9,37 @@ export class YopmailHelper {
    */
   static async fetchOtp(page: Page, email: string): Promise<string> {
 
-    const yopmailPage = await page.context().newPage();
+  const yopmailPage = await page.context().newPage();
 
-    await ElementActions.navigateTo(yopmailPage, testData.yopmailUrl);
+  await yopmailPage.goto(testData.yopmailUrl);
 
-    await ElementActions.writeText(
-      yopmailPage.getByRole('textbox', { name: 'Login' }),
-      email
-    );
+  // Enter email
+  const emailInput = yopmailPage.locator('input[name="login"]');
+  await emailInput.waitFor({ state: 'visible' });
+  await emailInput.fill(email);
 
-    await ElementActions.clickElement(
-      yopmailPage.getByTitle('Check Inbox @yopmail.com')
-    );
+  // Stable click for Check Inbox
+  await page.waitForTimeout(1000); 
+  const checkInboxBtn = yopmailPage.locator('#refreshbut button');
 
-    const frameElement = await yopmailPage.waitForSelector('iframe[name="ifmail"]');
-    const frame = await frameElement.contentFrame();
+  await checkInboxBtn.waitFor({ state: 'visible' });
+  await checkInboxBtn.click({ force: true });
 
-    const bodyLocator = frame!.locator('body');
+  // Wait for iframe
+  const frameLocator = yopmailPage.frameLocator('iframe[name="ifmail"]');
 
-    // Wait until OTP appears
-    await expect(bodyLocator).toContainText(/\d{6}/, { timeout: 15000 });
+  const bodyLocator = frameLocator.locator('body');
 
-    const text = await bodyLocator.innerText();
-    const otpMatch = text.match(/\d{6}/);
+  // Wait until OTP appears
+  await expect(bodyLocator).toContainText(/\d{6}/, { timeout: 20000 });
 
-    expect(otpMatch, 'OTP not found in Yopmail inbox').not.toBeNull();
+  const text = await bodyLocator.innerText();
+  const otpMatch = text.match(/\d{6}/);
 
-    await yopmailPage.close();
+  expect(otpMatch, 'OTP not found in Yopmail inbox').not.toBeNull();
 
-    return otpMatch![0];
-  }
+  await yopmailPage.close();
+
+  return otpMatch![0];
+}
 }

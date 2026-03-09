@@ -8,6 +8,13 @@ import { Locator, expect, Page } from '@playwright/test';
  */
 export class ElementActions {
 
+  // -------------------
+  // Locators
+  // -------------------
+  private static toastContainer = '.p-toast-message-text';
+  private static toastSummary = '.p-toast-summary';
+  private static toastDetail = '.p-toast-detail';
+
   /**
    * Click on an element after verifying visibility and enabled state.
    */
@@ -17,14 +24,16 @@ export class ElementActions {
     await locator.click();
   }
 
-  /**
-   * Enter text into an input field.
-   */
-  static async writeText(locator: Locator, text: string): Promise<void> {
-    await expect(locator).toBeVisible();
-    await expect(locator).toBeEditable();
-    await locator.fill(text);
-  }
+/**
+ * Enter text into an input field. Clears existing text before entering new value.
+ */
+static async writeText(locator: Locator, text: string): Promise<void> {
+  await expect(locator).toBeVisible();
+  await expect(locator).toBeEditable();
+
+  await locator.clear();   // remove existing text
+  await locator.fill(text); // enter new value
+}
 
   /**
    * Clear text from an input field.
@@ -104,4 +113,45 @@ export class ElementActions {
   static async waitForUrlContains(page: Page, partialUrl: string): Promise<void> {
     await expect(page).toHaveURL(new RegExp(partialUrl));
   }
+
+static async verifyToastAppeared(page: Page): Promise<void> {
+  await expect(page.getByRole('alert').first())
+    .toBeVisible({ timeout: 10000 });
+}
+
+
+/**
+ * Verify element text
+ */
+static async verifyText(locator: Locator, expectedText: string): Promise<void> {
+  await expect(locator).toBeVisible();
+  await expect(locator).toHaveText(expectedText);
+}
+
+/**
+ * Verify attribute value
+ */
+static async verifyAttribute(
+  locator: Locator,
+  attribute: string,
+  expectedValue: string
+): Promise<void> {
+  await expect(locator).toHaveAttribute(attribute, expectedValue);
+}
+
+/**
+ * Verify element disabled using aria-disabled
+ */
+static async verifyDisabled(locator: Locator): Promise<void> {
+  await expect(locator).toHaveAttribute('aria-disabled', 'true');
+}
+
+/**
+ * Verify element enabled using aria-disabled
+ */
+static async verifyEnabled(locator: Locator): Promise<void> {
+  await expect(locator).toHaveAttribute('aria-disabled', 'false');
+}
+
+
 }
