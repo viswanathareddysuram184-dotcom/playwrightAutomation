@@ -20,7 +20,7 @@ export class ElementActions {
    */
 static async clickElement(locator: Locator, force: boolean = false): Promise<void> {
 
-  await locator.waitFor({ state: 'visible', timeout: 10000 });
+  await locator.waitFor({ state: 'visible', timeout: 20000 });
 
   await expect(locator).toBeVisible();
   await expect(locator).toBeEnabled();
