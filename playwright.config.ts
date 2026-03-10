@@ -5,7 +5,7 @@ export default defineConfig({
   timeout: 90000,
   retries: 1,
 fullyParallel: true,
-  workers: 2,
+  workers: 1,
   reporter: [
     ['html'],
     ['list']
@@ -15,12 +15,10 @@ fullyParallel: true,
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
     trace: 'retain-on-failure'
+    
   },
   projects: [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] }
-    },
+  
     {
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] }

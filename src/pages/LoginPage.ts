@@ -34,6 +34,7 @@ export class LoginPage {
    * Navigate to login page.
    */
   async navigateToLogin(): Promise<void> {
+    
     await ElementActions.navigateTo(this.page, testData.baseUrl);
   }
 
@@ -44,6 +45,7 @@ export class LoginPage {
     await ElementActions.writeText(this.emailTextbox, username);
     await ElementActions.writeText(this.passwordTextbox, password);
     await ElementActions.clickElement(this.loginButton);
+    await ElementActions.waitForLoaderToDisappear(this.page);
     await ElementActions.waitForElementVisible(this.otpTextbox);
   }
 

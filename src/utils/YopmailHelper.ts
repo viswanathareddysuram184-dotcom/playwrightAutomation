@@ -10,36 +10,54 @@ export class YopmailHelper {
   static async fetchOtp(page: Page, email: string): Promise<string> {
 
   const yopmailPage = await page.context().newPage();
-
+  await yopmailPage.setViewportSize({ width: 1550, height: 900 });
   await yopmailPage.goto(testData.yopmailUrl);
 
-  // Enter email
   const emailInput = yopmailPage.locator('input[name="login"]');
-  await emailInput.waitFor({ state: 'visible' });
-  await emailInput.fill(email);
-
-  // Stable click for Check Inbox
-  await page.waitForTimeout(1000); 
   const checkInboxBtn = yopmailPage.locator('#refreshbut button');
-
-  await checkInboxBtn.waitFor({ state: 'visible' });
-  await checkInboxBtn.click({ force: true });
-
-  // Wait for iframe
   const frameLocator = yopmailPage.frameLocator('iframe[name="ifmail"]');
-
   const bodyLocator = frameLocator.locator('body');
 
-  // Wait until OTP appears
-  await expect(bodyLocator).toContainText(/\d{6}/, { timeout: 20000 });
+  let otp: string | null = null;
 
-  const text = await bodyLocator.innerText();
-  const otpMatch = text.match(/\d{6}/);
+  for (let i = 0; i < 5; i++) {
 
-  expect(otpMatch, 'OTP not found in Yopmail inbox').not.toBeNull();
+    console.log(`Attempt ${i + 1}`);
+
+    // Enter email
+    await emailInput.waitFor({ state: 'visible' });
+    await emailInput.fill('');
+    await emailInput.fill(email);
+
+    // Click Check Inbox
+    await checkInboxBtn.waitFor({ state: 'visible' });
+    await checkInboxBtn.click();
+
+    try {
+
+      // Wait 3 sec for OTP
+      await expect(bodyLocator).toContainText(/\d{6}/, { timeout: 3000 });
+
+      const text = await bodyLocator.innerText();
+      const match = text.match(/\d{6}/);
+
+      if (match) {
+        otp = match[0];
+        console.log(`OTP Found: ${otp}`);
+        break;
+      }
+
+    } catch {
+
+      console.log("OTP not found, reloading page...");
+      await yopmailPage.reload(); // reload page
+
+    }
+  }
+
+  expect(otp, 'OTP not found after retries').not.toBeNull();
 
   await yopmailPage.close();
 
-  return otpMatch![0];
-}
-}
+  return otp!;
+}}

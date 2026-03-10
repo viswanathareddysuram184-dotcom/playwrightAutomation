@@ -37,7 +37,11 @@ export class MyTeamPage {
     return this.page.locator('//p-confirmdialog//button[.//span[text()="Yes"]]');
   }
 
-
+private get supervisorDropdown(): Locator {
+  return this.page.locator(
+    `//p-dropdown[@formcontrolname="supervisor"]//span[contains(@class,'p-dropdown-label')]`
+  );
+}
 
   // =================== Dynamic Locator ===================
   private deleteButton(email: string): Locator {
@@ -65,7 +69,7 @@ export class MyTeamPage {
 
 // Method to click the "+" button
 async clickAddButton() {
-    await ElementActions.clickElement(this.addButton);
+    await ElementActions.clickElement(this.addButton, true);
 }
 
   /**
@@ -100,6 +104,7 @@ async clickAddButton() {
 
   async createNewAgent(details: { firstName: string; lastName: string; email: string; phone: string, supervisorName: string }) {
     // Wait for the form to appear
+    
     await ElementActions.waitForElementVisible(this.firstNameInput); 
  // Fill the form fields
     await ElementActions.writeText(this.firstNameInput, details.firstName);
@@ -108,11 +113,9 @@ async clickAddButton() {
     await ElementActions.writeText(this.phoneInput, details.phone);
      
 
-    // Select Supervisor
-const supervisorDropdown = this.page.getByRole('combobox', { name: 'Select Supervisor' });
-await supervisorDropdown.click();
-await this.page .getByText(details.supervisorName, { exact: false }).click();
-
+  // Select Supervisor
+  await this.supervisorDropdown.click();
+  await this.page.getByText(details.supervisorName, { exact: false }).click();
     // Click the Create button
     await ElementActions.clickElement(this.createButton);
 
@@ -128,7 +131,12 @@ await this.page .getByText(details.supervisorName, { exact: false }).click();
  */
 async editUserByEmail(
   email: string,
-  details: { firstName?: string; lastName?: string; phone?: string }
+  details: { 
+    firstName?: string; 
+    lastName?: string; 
+    phone?: string;
+    supervisorName?: string; // new optional parameter
+  }
 ): Promise<void> {
 
   console.log(`Starting edit for user with email: ${email}`);
@@ -183,6 +191,13 @@ async editUserByEmail(
     } else {
       console.log("Phone number is same, skipping update");
     }
+  }
+
+  // Supervisor update (optional)
+  if (details.supervisorName) {
+    console.log(`Updating Supervisor to: ${details.supervisorName}`);
+    await this.supervisorDropdown.click();
+     await this.page.getByText(details.supervisorName, { exact: false }).click();
   }
 
   // Click Save

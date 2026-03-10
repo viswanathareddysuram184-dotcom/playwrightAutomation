@@ -18,11 +18,11 @@ export class ElementActions {
   /**
    * Click on an element after verifying visibility and enabled state.
    */
-  static async clickElement(locator: Locator): Promise<void> {
-    await expect(locator).toBeVisible();
-    await expect(locator).toBeEnabled();
-    await locator.click();
-  }
+static async clickElement(locator: Locator, force: boolean = false): Promise<void> {
+  await expect(locator).toBeVisible();
+  await expect(locator).toBeEnabled();
+  await locator.click({ force });
+}
 
 /**
  * Enter text into an input field. Clears existing text before entering new value.
@@ -151,6 +151,22 @@ static async verifyDisabled(locator: Locator): Promise<void> {
  */
 static async verifyEnabled(locator: Locator): Promise<void> {
   await expect(locator).toHaveAttribute('aria-disabled', 'false');
+}
+
+
+static async waitForLoaderToDisappear(page: Page): Promise<void> {
+
+  const loader = page.locator('.loader'); // update locator according to your app
+
+  try {
+    // Wait if loader appears
+    await loader.waitFor({ state: 'visible', timeout: 5000 });
+  } catch {
+    // Loader might not appear, ignore
+  }
+
+  // Wait until loader disappears
+  await loader.waitFor({ state: 'hidden', timeout: 10000 });
 }
 
 
