@@ -19,20 +19,61 @@ export class ElementActions {
    * Click on an element after verifying visibility and enabled state.
    */
 static async clickElement(locator: Locator, force: boolean = false): Promise<void> {
+
+  await locator.waitFor({ state: 'visible', timeout: 10000 });
+
   await expect(locator).toBeVisible();
   await expect(locator).toBeEnabled();
-  await locator.click({ force });
+
+  // Scroll to element
+  await locator.scrollIntoViewIfNeeded();
+
+  // Retry click (handles transient flakiness)
+  for (let i = 0; i < 3; i++) {
+    try {
+      await locator.click({ force, timeout: 5000 });
+      return;
+    } catch (error) {
+      if (i === 2) throw error;
+      await locator.page().waitForTimeout(500);
+    }
+  }
 }
 
 /**
  * Enter text into an input field. Clears existing text before entering new value.
  */
 static async writeText(locator: Locator, text: string): Promise<void> {
+
+  await locator.waitFor({ state: 'visible', timeout: 10000 });
+
   await expect(locator).toBeVisible();
   await expect(locator).toBeEditable();
 
-  await locator.clear();   // remove existing text
-  await locator.fill(text); // enter new value
+  // Scroll to element
+  await locator.scrollIntoViewIfNeeded();
+
+  // Focus input field
+  await locator.click();
+
+  // Retry logic to avoid flaky typing
+  for (let i = 0; i < 3; i++) {
+    try {
+
+      await locator.clear();
+      await locator.fill(text);
+
+      const value = await locator.inputValue();
+
+      if (value === text) {
+        return;
+      }
+
+    } catch (error) {
+      if (i === 2) throw error;
+      await locator.page().waitForTimeout(300);
+    }
+  }
 }
 
   /**

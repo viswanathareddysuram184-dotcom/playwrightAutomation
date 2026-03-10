@@ -10,8 +10,11 @@ export class YopmailHelper {
   static async fetchOtp(page: Page, email: string): Promise<string> {
 
   const yopmailPage = await page.context().newPage();
+
   await yopmailPage.setViewportSize({ width: 1550, height: 900 });
-  await yopmailPage.goto(testData.yopmailUrl);
+
+  // Navigate using reusable method
+  await ElementActions.navigateTo(yopmailPage, testData.yopmailUrl);
 
   const emailInput = yopmailPage.locator('input[name="login"]');
   const checkInboxBtn = yopmailPage.locator('#refreshbut button');
@@ -22,21 +25,18 @@ export class YopmailHelper {
 
   for (let i = 0; i < 5; i++) {
 
-    console.log(`Attempt ${i + 1}`);
+    console.log(`Yopmail OTP Attempt: ${i + 1}`);
 
-    // Enter email
-    await emailInput.waitFor({ state: 'visible' });
-    await emailInput.fill('');
-    await emailInput.fill(email);
+    // Enter email using reusable method
+    await ElementActions.writeText(emailInput, email);
 
-    // Click Check Inbox
-    await checkInboxBtn.waitFor({ state: 'visible' });
-    await checkInboxBtn.click();
+    // Click check inbox
+    await ElementActions.clickElement(checkInboxBtn, true);
 
     try {
 
-      // Wait 3 sec for OTP
-      await expect(bodyLocator).toContainText(/\d{6}/, { timeout: 3000 });
+      // Wait for OTP
+      await expect(bodyLocator).toContainText(/\d{6}/, { timeout: 4000 });
 
       const text = await bodyLocator.innerText();
       const match = text.match(/\d{6}/);
@@ -49,15 +49,16 @@ export class YopmailHelper {
 
     } catch {
 
-      console.log("OTP not found, reloading page...");
-      await yopmailPage.reload(); // reload page
+      console.log("OTP not received yet. Reloading inbox...");
+      await yopmailPage.reload();
 
     }
   }
 
-  expect(otp, 'OTP not found after retries').not.toBeNull();
+  expect(otp, 'OTP not found after multiple retries').not.toBeNull();
 
   await yopmailPage.close();
 
   return otp!;
-}}
+}
+}
